@@ -8,40 +8,44 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
 
   config.vm.box = "precise64"
+  config.vm.synced_folder "/home/jpratt/.ssh", "/home/vagrant/.ssh"
   config.vm.hostname = "myfallcon-dev.com"
   config.vm.network "forwarded_port", guest: 3000, host: 3001
 
-  config.vm.provision "shell", inline: update_repos
-  config.vm.provision "shell", inline: install_add_apt_repository
+#  config.vm.provision "shell", inline: update_repos
+#  config.vm.provision "shell", inline: install_add_apt_repository
 
   #nokogiri
-  config.vm.provision "shell", inline: install_dependencies(["libxslt-dev", "libxml2-dev"])
+#  config.vm.provision "shell", inline: install_dependencies(["libxslt-dev", "libxml2-dev"])
 
   #capybara
-  config.vm.provision "shell", inline: install_dependencies(["libqt4-dev"])
+#  config.vm.provision "shell", inline: install_dependencies(["libqt4-dev"])
 
   #rmagick
-  config.vm.provision "shell", inline: install_dependencies(["libmagickwand-dev"])
+#  config.vm.provision "shell", inline: install_dependencies(["libmagickwand-dev"])
 
-  config.vm.provision "shell", inline: install_keychain
-  config.vm.provision "shell", inline: install_nginx
-  config.vm.provision "shell", inline: install_git
-  config.vm.provision "shell", inline: install_tree
-  config.vm.provision "shell", inline: install_curl
-  config.vm.provision "shell", inline: install_tmux
-  config.vm.provision "shell", inline: install_nodejs
-  config.vm.provision "shell", inline: install_emacs
-  config.vm.provision "shell", inline: install_postgresql
-  config.vm.provision "shell", inline: install_the_silver_searcher
+#  config.vm.provision "shell", inline: install_openssh_server
+#  config.vm.provision "shell", inline: install_keychain
+#  config.vm.provision "shell", inline: install_nginx
+#  config.vm.provision "shell", inline: install_git
+#  config.vm.provision "shell", inline: install_tree
+#  config.vm.provision "shell", inline: install_curl
+#  config.vm.provision "shell", inline: install_tmux
+#  config.vm.provision "shell", inline: install_nodejs
+#  config.vm.provision "shell", inline: install_emacs
+#  config.vm.provision "shell", inline: install_postgresql
+#  config.vm.provision "shell", inline: install_the_silver_searcher
 
-  config.vm.provision "shell", inline: install_rvm, privileged: false
-  config.vm.provision "shell", inline: install_ruby("2.1.1"), privileged: false
-  config.vm.provision "shell", inline: turn_off_gemdoc_install, privileged: false
-  config.vm.provision "shell", inline: gem_install("bundler"), privileged: false
-  config.vm.provision "shell", inline: gem_install("capistrano"), privileged: false
-  config.vm.provision "shell", inline: update_gems, privileged: false
+#  config.vm.provision "shell", inline: install_rvm, privileged: false
+#  config.vm.provision "shell", inline: install_ruby("2.1.1"), privileged: false
+#  config.vm.provision "shell", inline: turn_off_gemdoc_install, privileged: false
+#  config.vm.provision "shell", inline: gem_install("bundler"), privileged: false
+#  config.vm.provision "shell", inline: gem_install("capistrano"), privileged: false
+#  config.vm.provision "shell", inline: update_gems, privileged: false
 
-  config.vm.provision "shell", inline: setup_postgres_account
+#  config.vm.provision "shell", inline: setup_postgres_account
+
+#  config.vm.provision "shell", inline: tweak_keychain, privileged: false
 end
 
 def get_hostname
@@ -56,6 +60,20 @@ end
 def update_repos
   "apt-get update"
 end
+
+def tweak_keychain
+  "echo 'eval \`keychain --eval --agents ssh aki-basement\`' | sudo -u vagrant tee -a ~/.bash_profile"
+end
+
+def install_openssh_server
+  "#{install("openssh-server")} && sudo service ssh restart"
+
+end
+
+def install_keychain
+  "#{install("keychain")} && sudo service ssh restart"
+end
+
 
 def install_nginx
   "#{add_ppa("nginx/stable")} && #{install("nginx")}"
